@@ -38,6 +38,7 @@ jobs:
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
       - name: Create a throwaway debug keystore
         run: |
+          rm -f /root/debug.keystore
           keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android \
             -keystore /root/debug.keystore -storepass android \
             -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
