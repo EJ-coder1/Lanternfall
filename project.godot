@@ -1,0 +1,37 @@
+; Engine configuration file.
+; Lanternfall - original fantasy action platformer (vertical slice)
+
+config_version=5
+
+[application]
+
+config/name="Lanternfall"
+config/description="Original fantasy action-adventure platformer. Vertical slice: Lanternroot Hollow."
+run/main_scene="res://scenes/main_menu/main_menu.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameState="*res://scripts/managers/game_state.gd"
+SaveSystem="*res://scripts/save_system/save_system.gd"
+Sfx="*res://scripts/managers/audio_manager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/canvas_textures/default_texture_filter=0
+environment/defaults/default_clear_color=Color(0.04, 0.09, 0.12, 1)

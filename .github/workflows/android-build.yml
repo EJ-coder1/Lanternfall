@@ -1,0 +1,56 @@
+# UNVERIFIED WORKFLOW. It was written but never run (no GitHub or Android SDK access
+# where it was authored). The "test" job uses the same commands that passed locally on
+# Godot 4.4.1. The "android" job is the part most likely to need small fixes on first run
+# (SDK/JDK paths inside the image, export template location).
+# Never commit signing keys. For a release build, store the keystore and passwords in
+# GitHub Secrets and pass them through the GODOT_ANDROID_KEYSTORE_RELEASE_* variables.
+name: Build and test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  GODOT_VERSION: "4.4.1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Headless gameplay tests
+        run: GODOT=godot sh tests/run_tests.sh
+
+  android:
+    needs: test
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install export templates
+        run: |
+          mkdir -v -p ~/.local/share/godot/export_templates/
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+      - name: Create a throwaway debug keystore
+        run: |
+          keytool -keyalg RSA -genkeypair -alias androiddebugkey -keypass android \
+            -keystore /root/debug.keystore -storepass android \
+            -dname "CN=Android Debug,O=Android,C=US" -validity 9999 -deststoretype pkcs12
+      - name: Import resources and export debug APK
+        env:
+          GODOT_ANDROID_KEYSTORE_DEBUG_PATH: /root/debug.keystore
+          GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+          GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+        run: |
+          mkdir -v -p build
+          godot --headless --import
+          godot --headless --export-debug "Android Debug" build/lanternfall-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lanternfall-debug-apk
+          path: build/*.apk
